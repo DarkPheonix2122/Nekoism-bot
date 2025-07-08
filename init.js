@@ -9,9 +9,10 @@ const SHARED_SECRET = "sbhcwiehbfcuhdghvw93281746";
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const axios = require("axios");
-const { data: client } = await axios.get(`${BOT_API}/api/client`,{
+axios.get(`${BOT_API}/api/client`,{
 	headers: { Authorization: `Bearer ${SHARED_SECRET}` }
 });
+module.exports = async() => {
     const songFavorites = client.songFavorites;
 
     const SITE_URL = "http://localhost:3000"
@@ -731,5 +732,5 @@ const { data: client } = await axios.get(`${BOT_API}/api/client`,{
     });
 
     app.use(errorHandler)
-        app.listen(3000, () => console.log("site running"));
-)
+    app.listen(3000, () => console.log("site running"));
+}
