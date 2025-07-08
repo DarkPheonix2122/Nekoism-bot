@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "init.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node -v $$ node start.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +15,7 @@
     "crypto": "^1.0.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
+    "multer": "^2.0.1",
     "passport": "^0.7.0",
     "passport-discord": "^0.1.4",
     "path": "^0.12.7"
