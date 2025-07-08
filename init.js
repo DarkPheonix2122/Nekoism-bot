@@ -98,7 +98,9 @@ async function startSite() {
             totalUsers = statsRes.data.totalUsers;
             isOwner = ownersRes.data.owners.includes(req.user.id);
             mutualGuilds = req.user.guilds.filter(g => guildsRes.data.some(bg => bg.id === g.id));
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("dashboard", {
             user: req.user,
             guilds: mutualGuilds,
@@ -123,7 +125,9 @@ async function startSite() {
             commands = statsRes.data.totalCommands || 0;
             events = statsRes.data.totalEvents || 0;
             latency = statsRes.data.totalLatency || 0;
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         if (!isOwner) return res.status(403).send("Forbidden");
         res.render("admin", {
             user: req.user,
@@ -158,7 +162,9 @@ async function startSite() {
             totalUsers = statsRes.data.totalUsers;
             const userGuild = req.user.guilds.find(g => g.id === guildID);
             isAdmin = userGuild && (userGuild.permissions & 0x8) === 0x8;
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("settings", {
             user: req.user,
             guildID,
@@ -192,7 +198,9 @@ async function startSite() {
             for (const key of currentModules) {
                 modulesObj[key] = modulesArr.includes(key);
             }
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
 
         // Send update to API
         try {
@@ -202,7 +210,9 @@ async function startSite() {
             }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect(`/dashboard/settings/${guildID}`);
     });
 
@@ -220,7 +230,9 @@ async function startSite() {
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
             allFilters = filtersRes.data.filters || [];
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("user-settings", {
             user: req.user,
             sidebar: getSidebar(req.user, req.user.guilds, "global"),
@@ -237,7 +249,9 @@ async function startSite() {
             await axios.post(`${BOT_API}/api/user-global/${req.user.id}`, req.body, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect("/dashboard/user/settings");
     });
 
@@ -253,7 +267,9 @@ async function startSite() {
             favorites = favRes.data;
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("user-favorites", {
             user: req.user,
             sidebar: getSidebar(req.user, req.user.guilds, "favorites"),
@@ -270,7 +286,9 @@ async function startSite() {
             await axios.post(`${BOT_API}/api/song-favorites/${req.user.id}`, { favorites: req.body.favorites }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect("/dashboard/user/favorites");
     });
 
@@ -289,7 +307,9 @@ async function startSite() {
                 totalGuilds = statsRes.data.totalGuilds;
                 totalUsers = statsRes.data.totalUsers;
             }
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("user-server-settings", {
             user: req.user,
             sidebar: getSidebar(req.user, req.user.guilds, "server", selectedGuild),
@@ -309,7 +329,9 @@ async function startSite() {
             await axios.post(`${BOT_API}/api/user-settings/${guildID}/${userId}`, req.body, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect(`/dashboard/user/settings/server?guild=${guildID}`);
     });
 
@@ -329,7 +351,9 @@ async function startSite() {
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
             modules = Object.keys(settingsRes.data.modules || {});
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("guildsetup", {
             user: req.user,
             guildID,
@@ -356,7 +380,9 @@ async function startSite() {
             for (const key of currentModules) {
                 modulesObj[key] = modulesArr.includes(key);
             }
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         try {
             await axios.post(`${BOT_API}/api/guild-settings/${guildID}`, {
                 ...req.body,
@@ -365,7 +391,9 @@ async function startSite() {
             }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect(`/dashboard/settings/${guildID}`);
     });
 
@@ -376,7 +404,9 @@ async function startSite() {
             const statsRes = await axios.get(`${BOT_API}/api/stats`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } });
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.render("setupUser", {
             user: req.user,
             totalGuilds,
@@ -393,7 +423,9 @@ async function startSite() {
             }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect("/dashboard");
     });
 
@@ -403,7 +435,9 @@ async function startSite() {
             await axios.post(`${BOT_API}/api/song-favorites/${req.user.id}`, { favorites: req.body.favorites || [] }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-        } catch (e) {}
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
         res.redirect("/dashboard/user/favorites");
     });
 
