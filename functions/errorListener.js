@@ -58,7 +58,7 @@ async function sendErrorToDiscord(error, options = {}) {
   }
 }
 
-async function startupProcess(neko){
+async function startupProcess(){
   console.log("Error listener started.");
   process.on("uncaughtException", (error) => {
     sendErrorToDiscord(error, { fatal: true, source: "process" });
