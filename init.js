@@ -22,7 +22,7 @@ module.exports = async() => {
     const CALLBACK_LOGIN_URL = "http://localhost:3000/callback-verify"
     const SESSION_SECRET = "4135231b7f33c6567493mb2a78420fa76";
     const app = express();
-    const errorHandler = require('../functions/errorHandler');
+    const errorHandler = require('./functions/errorHandler');
     app.set("view engine", "ejs");
     app.set("views", path.join(__dirname, "views"));
     app.use(express.static(path.join(__dirname, "public")));
