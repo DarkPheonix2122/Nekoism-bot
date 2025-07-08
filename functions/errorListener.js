@@ -1,6 +1,6 @@
 // errorListener.js
 const { request } = require("undici");
-const ERROR_WEBHOOK = "https://discord.com/api/webhooks/1380804629192769686/DanANlJnLnHLjB72rkFtWkndUZfQE7Z9TqB_aHfQ3n3OYD-B9TRWHIFPsBspLV3Gv515";
+const { ERROR_WEBHOOK } = process.env;
 
 async function handleFatalError(error) {
     console.error('❌ Fatal Error:', error + '\nRebooting in 5 seconds...');
