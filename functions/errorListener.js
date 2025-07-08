@@ -1,6 +1,5 @@
 // errorListener.js
 const { request } = require("undici");
-const chalk = require("chalk")
 const ERROR_WEBHOOK = "https://discord.com/api/webhooks/1380804629192769686/DanANlJnLnHLjB72rkFtWkndUZfQE7Z9TqB_aHfQ3n3OYD-B9TRWHIFPsBspLV3Gv515";
 
 async function handleFatalError(error) {
