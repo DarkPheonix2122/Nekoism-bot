@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 function startBot() {
   try{
+    console.log("starting API");
     const bot = spawn('node', ['init.js'], { stdio: 'inherit' });
   }catch(err){
     require("./functions/errorListener").send(err);
