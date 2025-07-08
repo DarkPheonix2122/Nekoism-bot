@@ -16,7 +16,7 @@ async function sendErrorToDiscord(error, options = {}) {
   }
 
   const {
-    source = "",
+    source = "FRONT-END API",
     eventName = null,   // source tag like "neko", "process", etc.
     fatal = false, // fatal error flag
     debug = false // debug flag
