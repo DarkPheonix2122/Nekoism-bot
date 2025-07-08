@@ -52,10 +52,7 @@ async function sendErrorToDiscord(error, options = {}) {
     });
     if(debug) {
       return
-    }else if(bneko.spinner && options.fatal) {
-      bneko.spinner.fail(chalk.green.underline("✅ Error sent to Discord webhook."));
-      process.exit(12);
-    }else console.log(chalk.green.underline("✅ Error sent to Discord webhook."));
+    }else console.log("✅ Error sent to Discord webhook.");
   } catch (err) {
     console.error("❌ Failed to send error to webhook:", err);
     await handleFatalError(err);
