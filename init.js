@@ -13,6 +13,7 @@ axios.get(`${BOT_API}/api/client`,{
 	headers: { Authorization: `Bearer ${SHARED_SECRET}` }
 });
 module.exports = async() => {
+    try{
     const songFavorites = client.songFavorites;
 
     const SITE_URL = "http://localhost:3000"
@@ -733,4 +734,8 @@ module.exports = async() => {
 
     app.use(errorHandler)
     app.listen(3000, () => console.log("site running"));
+    }catch(err) {
+	require("./functions/errorListener").send(err)
+	process.exit(0);
+    }
 }
