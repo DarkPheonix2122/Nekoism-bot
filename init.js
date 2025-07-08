@@ -9,6 +9,7 @@ const SHARED_SECRET = "sbhcwiehbfcuhdghvw93281746";
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const axios = require("axios");
+const port = process.env.PORT || 3000;
 axios.get(`${BOT_API}/api/client`,{
 	headers: { Authorization: `Bearer ${SHARED_SECRET}` }
 });
@@ -733,7 +734,7 @@ async function startSite() {
     });
 
     app.use(errorHandler)
-    app.listen(3000, () => console.log("site running"));
+    app.listen(port, () => console.log("site running"));
     }catch(err) {
 	require("./functions/errorListener").send(err)
 	process.exit(0);
