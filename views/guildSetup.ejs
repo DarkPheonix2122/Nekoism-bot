@@ -1,0 +1,223 @@
+<%- include('partials/header', { user: user, title: "Guild Setup" }) %>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server Setup</title>
+  <style>
+    .slide { display: none; }
+    .slide.active { display: block; animation: slideIn 0.5s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(50px);} to { opacity: 1; transform: translateX(0);} }
+    .setup-container { max-width: 400px; margin: 40px auto; background: #23272a; color: #fff; border-radius: 10px; padding: 2em; box-shadow: 0 4px 24px #0008; }
+    label, select, input { display: block; width: 100%; margin-bottom: 1em; }
+    button { background: #5865f2; color: #fff; border: none; padding: 0.7em 2em; border-radius: 5px; cursor: pointer; }
+    button:disabled { background: #444; }
+    .module-dropdown {
+      border: 1px solid #444;
+      border-radius: 5px;
+      background: #2c2f33;
+      padding: 0.5em;
+      position: relative;
+      min-height: 40px;
+      cursor: pointer;
+      margin-bottom: 1em;
+    }
+    .selected-modules {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .selected-tag {
+      background: #5865f2;
+      color: #fff;
+      border-radius: 3px;
+      padding: 2px 8px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .selected-tag .remove-tag {
+      margin-left: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .dropdown-list {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      right: 0;
+      background: #23272a;
+      border: 1px solid #444;
+      border-radius: 5px;
+      z-index: 10;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .module-dropdown.open .dropdown-list {
+      display: block;
+    }
+    .dropdown-item {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .dropdown-item:hover {
+      background: #5865f2;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-container">
+    <h2>Server Setup</h2>
+    <form id="setupForm" method="post" action="/setup/guild/<%= guildID %>">
+      <div class="slide active">
+        <label>Welcome Channel:
+          <select name="welcomeChannel" id="welcomeChannelSelect" onchange="toggleWelcomeMessage()">
+            <option value="">None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Welcome Message:
+          <input name="welcomeMessage" id="welcomeMessageInput" placeholder="Welcome to the server, {user}!" disabled />
+          <small style="color:#aaa;">Placeholders: </small>
+          <small style="color:#aaa;"><code>{user}</code> for the user's name.</small>
+          <small style="color:#aaa;"><code>{server}</code> for the server name.</small>
+          <small style="color:#aaa;"><code>{memberCount}</code> for the number of members.</small>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Leave Channel:
+          <select name="leaveChannel" id="leaveChannelSelect" onchange="toggleLeaveMessage()">
+            <option value="">None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Leave Message:
+          <input name="leaveMessage" id="leaveMessageInput" placeholder="Goodbye, {user}!" disabled />
+          <small style="color:#aaa;">You can use <code>{user}</code> for the leaving user's name.</small>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Default Role:
+          <select name="defaultRole">
+            <option value="">Select...</option>
+            <% roles.forEach(r => { %>
+              <option value="<%= r.id %>"><%= r.name %></option>
+            <% }) %>
+          </select>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Default Music Channel:
+          <select name="defaultMusicChannel">
+            <option value="">Select...</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>"><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Modules to Enable:</label>
+        <div id="moduleDropdown" class="module-dropdown" tabindex="0">
+          <div id="selectedModules" class="selected-modules"></div>
+          <div id="dropdownList" class="dropdown-list">
+            <% modules.forEach(m => { %>
+              <div class="dropdown-item" data-value="<%= m %>">
+                <%= m.charAt(0).toUpperCase() + m.slice(1) %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        <input type="hidden" name="modules" id="modulesInput" required>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Bot Prefix:
+          <input name="prefix" value="n!" required>
+        </label>
+        <button type="submit">Finish Setup</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  function nextSlide() {
+    slides[current].classList.remove('active');
+    current++;
+    slides[current].classList.add('active');
+  }
+  // --- Modules Multi-Select ---
+  const moduleDropdown = document.getElementById('moduleDropdown');
+  const dropdownList = document.getElementById('dropdownList');
+  const selectedModulesDiv = document.getElementById('selectedModules');
+  const modulesInput = document.getElementById('modulesInput');
+  let selectedModules = [];
+  moduleDropdown.addEventListener('click', function(e) {
+    moduleDropdown.classList.toggle('open');
+  });
+
+  dropdownList.addEventListener('click', function(e) {
+    if (e.target.classList.contains('dropdown-item')) {
+      const value = e.target.getAttribute('data-value');
+      if (!selectedModules.includes(value)) {
+        selectedModules.push(value);
+        updateSelectedModules();
+      }
+    }
+  });
+
+  function updateSelectedModules() {
+    selectedModulesDiv.innerHTML = '';
+    selectedModules.forEach(m => {
+      const tag = document.createElement('span');
+      tag.className = 'selected-tag';
+      tag.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+      const remove = document.createElement('span');
+      remove.className = 'remove-tag';
+      remove.textContent = '×';
+      remove.onclick = () => {
+        selectedModules = selectedModules.filter(val => val !== m);
+        updateSelectedModules();
+      };
+      tag.appendChild(remove);
+      selectedModulesDiv.appendChild(tag);
+    });
+    modulesInput.value = selectedModules.join(',');
+  }
+
+  // Close dropdown if clicked outside
+  document.addEventListener('click', function(e) {
+    if (!moduleDropdown.contains(e.target)) {
+      moduleDropdown.classList.remove('open');
+    }
+  });
+</script>
+<script>
+  function toggleWelcomeMessage() {
+    const select = document.getElementById('welcomeChannelSelect');
+    const input = document.getElementById('welcomeMessageInput');
+    input.disabled = !select.value;
+  }
+  function toggleLeaveMessage() {
+    const select = document.getElementById('leaveChannelSelect');
+    const input = document.getElementById('leaveMessageInput');
+    input.disabled = !select.value;
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    toggleWelcomeMessage();
+    toggleLeaveMessage();
+  });
+</script>

@@ -1,0 +1,34 @@
+<%- include('partials/header', { user: user, title: "User Search", sidebar: sidebar, totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+<div class="settings-box">
+  <h2>User Search</h2>
+  <form action="/search" method="get">
+    <input type="text" name="id" placeholder="User ID..." value="<%= userId || '' %>">
+    <button type="submit">Search</button>
+  </form>
+  <% if (found === null) { %>
+    <p>Enter a user ID to search.</p>
+  <% } else if (!found) { %>
+    <p style="color:#ff4fa3;">User not found (have they setup yet?)</p>
+  <% } else { %>
+    <h3>User Info for <%= userId %></h3>
+    <ul>
+      <li><b>Preferred Prefix:</b> <%= userGlobal.prefix || "n!" %></li>
+      <li><b>Birthday:</b> <%= userGlobal.birthday || "Not set" %></li>
+      <li><b>Favorite Movie:</b> <%= userGlobal.favoriteMovie || "Not set" %></li>
+      <li><b>Favorite Color:</b> <%= userGlobal.favoriteColor || "Not set" %></li>
+      <li><b>Favorite Food:</b> <%= userGlobal.favoriteFood || "Not set" %></li>
+      <li><b>Favorite Animal:</b> <%= userGlobal.favoriteAnimal || "Not set" %></li>
+    </ul>
+    <h3>Song Favorites</h3>
+    <% if (favorites.length === 0) { %>
+      <p>No song favorites.</p>
+    <% } else { %>
+      <ul>
+        <% favorites.forEach(fav => { %>
+          <li><a href="<%= fav.url %>" target="_blank"><%= fav.name %></a></li>
+        <% }) %>
+      </ul>
+    <% } %>
+  <% } %>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

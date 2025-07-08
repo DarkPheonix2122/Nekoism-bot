@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title || "Neko Dashboard" %></title>
+  <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/" class="logo">Neko</a>
+    </div>
+    <div class="nav-right">
+      <% if (user) { %>
+        <div class="user-dropdown">
+          <span class="user-info" onclick="toggleDropdown(event)">
+            <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=32" class="avatar">
+            <%= user.username %> <span style="font-size:1.2em;">▼</span>
+          </span>
+          <div id="dropdownMenu" class="dropdown-menu">
+            <form action="/search" method="get" style="margin:0; padding:0.5em;">
+              <input type="text" name="id" placeholder="Search User ID..." style="width:140px;">
+              <button type="submit" style="background:#5865f2; color:#fff; border:none; border-radius:4px; padding:0.2em 0.7em;">Go</button>
+            </form>
+            <a href="/logout" class="dropdown-logout">Logout</a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/login" class="login-btn">Login with Discord</a>
+      <% } %>
+    </div>
+  </nav>
+  <!-- Main layout: sidebar and content area -->
+   
+  <div class="main-content" style="display:flex;">
+    <% if (typeof sidebar !== "undefined") { %>
+      <%- include('sidebar', { user: user, sidebar: sidebar }) %>
+    <% } %>
+    <div class="content-area" style="flex:1; min-width:0;">
+      <!-- Your page content will be injected here by EJS -->
+      <script>
+        function toggleDropdown(e) {
+          e.stopPropagation();
+          document.getElementById('dropdownMenu').classList.toggle('show');
+        }
+        document.addEventListener('click', function() {
+          const menu = document.getElementById('dropdownMenu');
+          if (menu) menu.classList.remove('show');
+        });
+        // Prevent closing when clicking inside the dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+          const dropdown = document.getElementById('dropdownMenu');
+          if (dropdown) {
+            dropdown.addEventListener('click', function(e) {
+              e.stopPropagation();
+            });
+          }
+        });
+        </script>

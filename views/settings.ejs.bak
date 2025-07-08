@@ -1,0 +1,227 @@
+<%- include('partials/header', { user: user, title: "Settings", sidebar: sidebar, totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+<style>
+.settings-tabs {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 0;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+.tab-btn {
+  background: #23272a;
+  color: #fff;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  padding: 0.7em 1.5em;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  outline: none;
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.tab-btn.active, .tab-btn:focus {
+  background: #ff4fa3;
+  color: #fff;
+}
+.tab-content {
+  margin-top: 0;
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.settings-box {
+  margin-top: 0;
+}
+</style>
+
+<div class="settings-tabs">
+  <button type="button" class="tab-btn active" onclick="showTab('intro', this)">Introductions</button>
+  <button type="button" class="tab-btn" onclick="showTab('modules', this)">Modules/Commands</button>
+  <button type="button" class="tab-btn" onclick="showTab('general', this)">General</button>
+</div>
+
+<div class="settings-box">
+  <h2>Settings for Guild: <%= guildID %></h2>
+  <% if (isAdmin) { %>
+    <form method="POST" action="/settings/<%= guildID %>">
+      <!-- Introductions Tab -->
+      <div class="tab-content active" id="tab-intro">
+        <label>Welcome Channel:
+          <select name="welcomeChannel">
+            <option value="" <%= !settings.welcomeChannel ? "selected" : "" %> disabled>None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>" <%= settings.welcomeChannel === c.id ? "selected" : "" %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label><br>
+        <label>Welcome Message:
+          <input name="welcomeMessage" value="<%= settings.welcomeMessage || '' %>" placeholder="Welcome message">
+        </label><br>
+        <label>Leave Channel:
+          <select name="leaveChannel">
+            <option value="" <%= !settings.leaveChannel ? "selected" : "" %> disabled>None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>" <%= settings.leaveChannel === c.id ? "selected" : "" %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label><br>
+        <label>Leave Message:
+          <input name="leaveMessage" value="<%= settings.leaveMessage || '' %>" placeholder="Leave message">
+        </label><br>
+      </div>
+
+      <!-- Modules/Commands Tab -->
+      <div class="tab-content" id="tab-modules">
+        <div class="settings-tabs" id="modules-subtabs" style="margin-bottom:1em;">
+          <button type="button" class="tab-btn active" onclick="showSubTab('modules', this)">Modules</button>
+          <button type="button" class="tab-btn" onclick="showSubTab('custom', this)">Custom Commands</button>
+        </div>
+        <div class="subtab-content active" id="subtab-modules">
+          <label>Modules to Enable:</label><br>
+          <% moduleKeys.forEach(m => { %>
+            <label>
+              <input type="checkbox" name="modules" value="<%= m %>" <%= settings.modules[m] ? "checked" : "" %> />
+              <%= m.charAt(0).toUpperCase() + m.slice(1) %>
+            </label><br>
+          <% }) %>
+        </div>
+        <div class="subtab-content" id="subtab-custom">
+          <h3>Custom Commands</h3>
+
+          <form method="POST" action="/settings/<%= guildID %>/custom-commands/add">
+            <input type="text" name="name" placeholder="Command name (no prefix)" required>
+            <textarea name="response" placeholder="Response message or embed syntax..." required></textarea>
+            <button type="submit">Add Command</button>
+          </form>
+
+          <button type="button" onclick="togglePlaceholderHelp()" style="margin-top: 1em;">📘 Show Placeholders</button>
+          <div id="placeholder-help" style="display: none; background: #2c2f33; color: #fff; padding: 1em; border-radius: 8px; margin-top: 1em;">
+            <h4>Available Placeholders:</h4>
+            <ul style="list-style: disc; margin-left: 1.2em;">
+              <li><code>{user}</code> → The user who ran the command</li>
+              <li><code>{guild.name}</code> → The server name</li>
+              <li><code>{guild.memberCount}</code> → Server member count</li>
+              <li><code>{channel.name}</code> → The name of the channel the command was used in</li>
+              <li><code>{args:1}</code> / <code>{args:2}</code> / <code>{args:3}</code> → Positional arguments</li>
+              <li><code>{args:1:mention}</code> → Mentioned user in that position</li>
+            </ul>
+
+            <h4>Embed Fields:</h4>
+            <ul style="list-style: disc; margin-left: 1.2em;">
+              <li><code>{embed.title:Your Title}</code></li>
+              <li><code>{embed.description:Your Description}</code></li>
+              <li><code>{embed.footer:Footer text}</code></li>
+              <li><code>{embed.color:#FF00FF}</code></li>
+              <li><code>{embed.field:Title|Description}</code></li>
+            </ul>
+
+            <h4>Conditional Logic:</h4>
+            <ul style="list-style: disc; margin-left: 1.2em;">
+              <li><code>{if:args:1:mention}{then:...}{else:...}</code></li>
+            </ul>
+          </div>
+
+          <ul>
+            <% if (settings.customCommands && Object.keys(settings.customCommands).length > 0) { %>
+              <% for (const [cmd, val] of Object.entries(settings.customCommands)) { %>
+                <li>
+                  <strong><%= cmd %></strong>: <code><%= val %></code>
+                  <form method="POST" action="/settings/<%= guildID %>/custom-commands/delete" style="display:inline;">
+                    <input type="hidden" name="name" value="<%= cmd %>">
+                    <button type="submit">Delete</button>
+                  </form>
+                </li>
+              <% } %>
+            <% } else { %>
+              <li style="color:#aaa;">No custom commands set.</li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+
+      <!-- General Tab -->
+      <div class="tab-content" id="tab-general">
+        <label>Bot Prefix: <input name="prefix" value="<%= settings.prefix %>"></label><br>
+        <label>Giveaway Channel:
+          <select name="giveawayChannel">
+            <option value="" <%= !settings.giveawayChannel ? "selected" : "" %> disabled>None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>" <%= settings.giveawayChannel === c.id ? "selected" : "" %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label><br>
+        <label>Default Role:
+          <select name="defaultRole">
+            <option value="" <%= !settings.defaultRole ? "selected" : "" %> disabled>None</option>
+            <% roles.forEach(r => { %>
+              <option value="<%= r.id %>" <%= settings.defaultRole === r.id ? "selected" : "" %>><%= r.name %></option>
+            <% }) %>
+          </select>
+        </label><br>
+        <label>Default Music Channel:
+          <select name="defaultMusicChannel">
+            <option value="" <%= !settings.defaultMusicChannel ? "selected" : "" %> disabled>None</option>
+            <% channels.forEach(c => { %>
+              <option value="<%= c.id %>" <%= settings.defaultMusicChannel === c.id ? "selected" : "" %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label><br>
+      </div>
+      <button type="submit">✅ Save</button>
+    </form>
+
+    <!-- Test buttons OUTSIDE of main settings form -->
+    <div style="display: flex; gap: 1em; margin-top: 1.5em;">
+      <form method="POST" action="/settings/<%= guildID %>/test-welcome">
+        <button type="submit">Test Welcome Message</button>
+      </form>
+      <form method="POST" action="/settings/<%= guildID %>/test-leave">
+        <button type="submit">Test Leave Message</button>
+      </form>
+    </div>
+  <% } else { %>
+    <h3>Server Settings (read-only):</h3>
+    <ul>
+      <li>Prefix: <%= settings.prefix %></li>
+      <li>Welcome Channel: <%= channels.find(c => c.id === settings.welcomeChannel)?.name || "None" %></li>
+      <li>Leave Channel: <%= channels.find(c => c.id === settings.leaveChannel)?.name || "None" %></li>
+      <li>Giveaway Channel: <%= channels.find(c => c.id === settings.giveawayChannel)?.name || "None" %></li>
+      <li>Default Role: <%= roles.find(r => r.id === settings.defaultRole)?.name || "None" %></li>
+      <li>Default Music Channel: <%= channels.find(c => c.id === settings.defaultMusicChannel)?.name || "None" %></li>
+      <li>Modules Enabled:
+        <ul>
+          <% moduleKeys.forEach(m => { if(settings.modules[m]) { %>
+            <li><%= m %></li>
+          <% } }) %>
+        </ul>
+      </li>
+    </ul>
+  <% } %>
+
+<script>
+  function showTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+  function showSubTab(tab, btn) {
+    document.querySelectorAll('#modules-subtabs .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    document.querySelectorAll('#tab-modules .subtab-content').forEach(div => div.classList.remove('active'));
+    document.getElementById('subtab-' + tab).classList.add('active');
+  }
+  function togglePlaceholderHelp() {
+    const box = document.getElementById("placeholder-help");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  }
+  document.addEventListener("DOMContentLoaded", function() {
+    showTab('intro', document.querySelector('.tab-btn.active'));
+    showSubTab('modules', document.querySelector('#modules-subtabs .tab-btn.active'));
+  });
+</script>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

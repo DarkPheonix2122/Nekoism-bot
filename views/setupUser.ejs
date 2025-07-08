@@ -1,0 +1,81 @@
+<%- include('partials/header', { user: user, title: "Setup User Account" }) %>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Setup</title>
+  <style>
+    .slide { display: none; }
+    .slide.active { display: block; animation: slideIn 0.5s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(50px);} to { opacity: 1; transform: translateX(0);} }
+    .setup-container { max-width: 400px; margin: 40px auto; background: #23272a; color: #fff; border-radius: 10px; padding: 2em; box-shadow: 0 4px 24px #0008; }
+    label, select, input { display: block; width: 100%; margin-bottom: 1em; }
+    button { background: #ff4fa3; color: #fff; border: none; padding: 0.7em 2em; border-radius: 5px; cursor: pointer; }
+    button:disabled { background: #444; }
+  </style>
+</head>
+<body>
+  <div class="setup-container">
+    <h2>Welcome! Let's set up your profile.</h2>
+    <form id="setupForm" method="post">
+      <div class="slide active">
+        <label>Language:
+          <input name="lang" value="en" required>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Prefix:
+          <input name="prefix" value="n!" required>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Music Volume:
+          <input name="musicVolume" type="number" min="0" max="100" value="50" required>
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Favorite Movie:
+          <input name="favoriteMovie" placeholder="Your favorite movie">
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Birthday:
+          <input name="birthday" type="date">
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Favorite Color:
+          <input name="favoriteColor" placeholder="e.g. Blue">
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Favorite Food:
+          <input name="favoriteFood" placeholder="e.g. Sushi">
+        </label>
+        <button type="button" onclick="nextSlide()">Next</button>
+      </div>
+      <div class="slide">
+        <label>Favorite Animal:
+          <input name="favoriteAnimal" placeholder="e.g. Cat">
+        </label>
+        <button type="submit">Finish Setup</button>
+      </div>
+    </form>
+  </div>
+  <script>
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+      slides[current].classList.remove('active');
+      current++;
+      slides[current].classList.add('active');
+    }
+  </script>
+</body>
+</html>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

@@ -1,0 +1,20 @@
+<%- include('partials/header', { user: user, title: "Dashboard", sidebar: sidebar }) %>
+
+<div class="settings-box">
+  <h2>Welcome, <%= user.username %>!</h2>
+  <form>
+    <label for="guild">Select a server:</label>
+    <select id="guild" name="guildID" onchange="if(this.value) location = '/dashboard/settings/' + this.value;">
+      <option value="" selected disabled>Select a server...</option>
+      <% guilds.forEach(guild => { %>
+        <option value="<%= guild.id %>"><%= guild.name %></option>
+      <% }) %>
+    </select>
+  </form>
+  <% if (isOwner) { %>
+    <a href="/admin" style="display:inline-block; background:#ff3333; color:#fff; border:none; border-radius:5px; padding:0.7em 2em; font-weight:bold; text-decoration:none; margin-top:1em; cursor:pointer;">
+      Go to Admin Page
+    </a>
+  <% } %>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

@@ -1,0 +1,27 @@
+<%- include('partials/header', { user: user, title: "Per-Server Settings", sidebar: sidebar }) %>
+  <h2>Per-Server User Settings</h2>
+  <form method="get" action="/dashboard/user/settings/server">
+    <label>Select Server:
+      <select name="guild" onchange="this.form.submit()">
+        <% userGuilds.forEach(guild => { %>
+          <option value="<%= guild.id %>" <%= selectedGuild === guild.id ? "selected" : "" %>><%= guild.name %></option>
+        <% }) %>
+      </select>
+    </label>
+  </form>
+  <% if (serverSettings) { %>
+    <form method="post" action="/dashboard/user/settings/server">
+      <input type="hidden" name="guildID" value="<%= selectedGuild %>">
+      <label>Language:
+        <select name="lang">
+          <option value="" <%= !serverSettings.lang ? "selected" : "" %> disabled>En</option>
+        </select>
+      </label><br>
+      <label>Notifications: <input type="checkbox" name="notifications" <%= serverSettings.notifications ? "checked" : "" %>></label><br>
+      <label>Music Volume: <input name="musicVolume" type="number" value="<%= serverSettings.musicVolume %>"></label><br>
+      <!-- Add more per-server user settings fields as desired -->
+      <button type="submit">Save</button>
+    </form>
+  <% } %>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

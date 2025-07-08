@@ -1,0 +1,14 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png?size=64" class="avatar-lg">
+    <div><%= user.username %></div>
+  </div>
+  <nav>
+    <a href="/dashboard" class="<%= sidebar.active === 'dashboard' ? 'active' : '' %>">Guild Dashboard</a>
+    <a href="/dashboard/user/economy" class="<%= sidebar.active === 'economy' ? 'active' : '' %>">Economy</a>
+    <a href="/dashboard/user/settings" class="<%= sidebar.active === 'global' ? 'active' : '' %>">Global Settings</a>
+    <a href="/dashboard/user/favorites" class="<%= sidebar.active === 'favorites' ? 'active' : '' %>">Song Favorites</a>
+    <a href="/dashboard/user/settings/server" class="<%= sidebar.active === 'server' ? 'active' : '' %>">Per-Server Settings</a>
+    <a href="/verification" class="<%= sidebar.active === 'server' ? 'active' : '' %>">Verification</a>
+  </nav>
+</aside>

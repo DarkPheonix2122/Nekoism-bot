@@ -1,0 +1,97 @@
+<%- include('partials/header', { user: user, title: "Economy", sidebar: { active: "economy", user }, totalGuilds: 0, totalUsers: 0 }) %>
+
+<style>
+.economy-box {
+  background: #2c2f33;
+  color: #fff;
+  padding: 1.5em;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 2em auto;
+}
+.economy-box h2 {
+  margin-bottom: 1em;
+}
+.economy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+}
+.economy-item {
+  background: #23272a;
+  padding: 1em;
+  border-radius: 8px;
+}
+.economy-item strong {
+  display: block;
+  margin-bottom: 0.3em;
+}
+</style>
+
+<div class="economy-box">
+  <h2>Economy Overview for <%= user.username %></h2>
+  <div class="economy-grid">
+    <div class="economy-item">
+      <strong>Nekos</strong>
+      <span><%= economy.nekos %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Debit Card</strong>
+      <span><%= economy.debitCard %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Bank Max</strong>
+      <span><%= economy.bankMax %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Bank Level</strong>
+      <span><%= economy.bankLevel %></span>
+    </div>
+    <div class="economy-item">
+      <strong>House Level</strong>
+      <span><%= economy.houseLevel %></span>
+    </div>
+    <div class="economy-item">
+      <strong>House</strong>
+      <span><%= economy.house || "None" %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Job</strong>
+      <span><%= economy.job || "Unemployed" %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Job XP</strong>
+      <span><%= economy.jobXp %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Job Level</strong>
+      <span><%= economy.jobLevel %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Last Daily</strong>
+      <span><%= economy.lastDaily ? new Date(economy.lastDaily).toLocaleString() : "Never" %></span>
+    </div>
+    <div class="economy-item">
+      <strong>Last Work</strong>
+      <span><%= economy.lastWork ? new Date(economy.lastWork).toLocaleString() : "Never" %></span>
+    </div>
+  </div>
+  <hr style="margin: 2em 0; border-color: #444;">
+
+    <h3 style="text-align:center;">🎒 Inventory</h3>
+
+    <% if (economy.inventory && economy.inventory.length > 0) { %>
+    <ul style="list-style: none; padding: 0; max-width: 600px; margin: 0 auto;">
+        <% economy.inventory.forEach((item, index) => { %>
+        <li style="background: #23272a; margin-bottom: 0.5em; padding: 1em; border-radius: 8px;">
+            <strong>Item <%= index + 1 %>:</strong> <%= item.name || item %>
+            <% if (item.amount) { %> — x<%= item.amount %> <% } %>
+        </li>
+        <% }) %>
+    </ul>
+    <% } else { %>
+    <p style="text-align:center; color: #aaa;">Your inventory is empty.</p>
+    <% } %>
+</div>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

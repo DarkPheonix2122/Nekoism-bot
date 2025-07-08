@@ -1,0 +1,32 @@
+<%- include('partials/header', { user: user, title: "Favorites", sidebar: sidebar, totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+  <div class="favorites-tabs">
+    <a href="/dashboard/user/favorites" class="<%= tab === 'songs' ? 'active' : '' %>">Song Favorites</a>
+  </div>
+  <% if (tab === 'songs') { %>
+    <form method="post" action="/dashboard/user/favorites/delete">
+      <h2>Song Favorites</h2>
+      <% if (favorites.length === 0) { %>
+        <p>No favorites yet!</p>
+      <% } else { %>
+        <ul class="favorites-list">
+          <% favorites.forEach(fav => { %>
+            <li>
+              <input type="checkbox" name="selected" value="<%= fav.url %>">
+              <a href="<%= fav.url %>" target="_blank"><%= fav.name %></a>
+            </li>
+          <% }) %>
+        </ul>
+        <button type="submit" style="background:#ff4fa3;">Delete Selected</button>
+      <% } %>
+    </form>
+  <% } else if (tab === 'global') { %>
+    <h2>Global Favorites</h2>
+    <ul>
+      <% Object.entries(globalSettings).forEach(([key, value]) => {
+        if (key.startsWith("favorite") && value) { %>
+          <li><b><%= key.replace("favorite", "") %>:</b> <%= value %></li>
+      <% } }) %>
+    </ul>
+  <% } %>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

@@ -1,0 +1,13 @@
+<%- include('partials/header', { user: user, title: "Admin Panel", sidebar: sidebar, totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+<h2>Bot Admin Panel</h2>
+<ul>
+  <li>Total Guilds: <%= totalGuilds %></li>
+  <li>Total Users: <%= totalUsers %></li>
+  <li>API Latency: <%= latency %> ms</li>
+  <li>Total Events: <%= events %></li>
+  <li>Total Commands: <%= commands %></li>
+</ul>
+<form method="post" action="/admin/reboot" onsubmit="return confirm('Are you sure you want to reboot the bot?');">
+  <button type="submit" style="background:#ff4fa3;">Reboot Bot</button>
+</form>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

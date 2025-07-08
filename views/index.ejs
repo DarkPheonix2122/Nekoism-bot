@@ -1,0 +1,20 @@
+<%- include('partials/header', { user: user, title: "Welcome to Neko" }) %>
+
+<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh;">
+  <h1 style="font-size:4em; font-weight:bold; letter-spacing:0.1em; margin-bottom:0.2em; color:#ff4fa3; text-shadow:0 2px 16px #0008;">
+    Neko
+  </h1>
+  <p style="font-size:1.5em; color:#fff; margin-bottom:2em; text-shadow:0 1px 8px #0006;">
+    Welcome to Neko, your personal Discord bot suitable for all your needs
+  </p>
+  <% if (!user) { %>
+    <a href="/login" class="login-btn" style="background:#ff4fa3; color:#fff; font-size:1.2em; padding:0.8em 2.5em; border-radius:8px; font-weight:bold; text-decoration:none; box-shadow:0 2px 12px #ff4fa355;">
+      Login with Discord
+    </a>
+  <% } else { %>
+    <a href="/dashboard" class="login-btn" style="background:#5865f2; color:#fff; font-size:1.2em; padding:0.8em 2.5em; border-radius:8px; font-weight:bold; text-decoration:none; box-shadow:0 2px 12px #5865f255;">
+      Go to Dashboard
+    </a>
+  <% } %>
+<div></div>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>

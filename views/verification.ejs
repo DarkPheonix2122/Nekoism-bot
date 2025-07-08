@@ -1,0 +1,72 @@
+<%- include('partials/header', { user: user, title: "Verification" }) %>
+<%
+  const denied = userGlobalSettings.denied;
+  const deniedDate = userGlobalSettings.date ? new Date(userGlobalSettings.date) : null;
+  let canReapply = true;
+  if (denied && deniedDate) {
+    const now = new Date();
+    const diffDays = Math.floor((now - deniedDate) / (1000 * 60 * 60 * 24));
+    canReapply = diffDays >= 30;
+  }
+%>
+
+<% if (denied && !canReapply) { %>
+  <div class="settings-box" style="max-width:500px;margin:2em auto;">
+    <h2>Verification Denied</h2>
+    <p>Your application was denied. You may try again in <b><%= 30 - Math.floor((new Date() - date) / (1000 * 60 * 60 * 24)) %></b> days.</p>
+  </div>
+<% } else if (userGlobalSettings.verificationSubmit) { %>
+  <div class="settings-box" style="max-width:500px;margin:2em auto;">
+    <h2>Verification Under Review</h2>
+    <p>Your application is under review. Please wait for staff to respond.</p>
+  </div>
+<% } else { %>
+    <div class="settings-box" style="max-width:500px;margin:2em auto;">
+    <h2>Verification Guidelines</h2>
+    <ul style="margin-bottom:2em;">
+        <li>Please enter your real date of birth.</li>
+        <li>Upload a clear photo of yourself holding a half-crumbled piece of paper with today’s date written on it.</li>
+        <li>Make sure your face and the paper are both visible.</li>
+        <li>By applying to verify your account, you agree to Nekoism's <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</li>
+        <li>Submissions are reviewed by staff for safety and compliance.</li>
+    </ul>
+    <form id="verifyForm" enctype="multipart/form-data" method="POST">
+        <label>Date of Birth:
+        <input type="date" name="dob" required>
+        </label><br>
+        <label>Photo Upload:
+        <input type="file" name="photo" accept="image/*" required>
+        </label><br>
+        <label>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAABhVtYv98ar-gg-H"></div>
+        </label><br>
+        <button type="submit" class="disable-btn" style="margin-top:1em;">Submit for Verification</button>
+    </form>
+    <div id="verifyMsg" style="margin-top:1em;"></div>
+    </div>
+<% } %>
+<%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
+<script>
+document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  document.getElementById('verifyMsg').textContent = "Uploading...";
+  try {
+    const res = await fetch('/verification', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('verifyMsg').textContent = "✅ Submitted! Staff will review your verification soon.";
+      form.reset();
+    } else {
+      document.getElementById('verifyMsg').textContent = "❌ " + (data.error || "Submission failed.");
+    }
+  } catch {
+    document.getElementById('verifyMsg').textContent = "❌ Submission failed. Try again later.";
+  }
+});
+</script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
