@@ -12,7 +12,7 @@ const axios = require("axios");
 axios.get(`${BOT_API}/api/client`,{
 	headers: { Authorization: `Bearer ${SHARED_SECRET}` }
 });
-module.exports = async() => {
+function async startSite() => {
     try{
     const songFavorites = client.songFavorites;
 
@@ -739,3 +739,4 @@ module.exports = async() => {
 	process.exit(0);
     }
 }
+startSite()
