@@ -11,6 +11,7 @@ const multer = require("multer");
 const { PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
 
 async function startSite() {
+    require("./functions/errorListener");
     const SITE_URL = "http://localhost:3000";
     const CALLBACK_SITE_URL = "http://localhost:3000/callback";
     const CALLBACK_LOGIN_URL = "http://localhost:3000/callback-verify";
