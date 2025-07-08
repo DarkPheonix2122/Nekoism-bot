@@ -4,12 +4,10 @@ const passport = require("passport");
 const DiscordStrategy = require("passport-discord").Strategy;
 const bodyParser = require("body-parser");
 const path = require("path");
-const BOT_API = "https://fs-variance-secondary-pipe.trycloudflare.com";
-const SHARED_SECRET = "sbhcwiehbfcuhdghvw93281746";
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const axios = require("axios");
-const port = process.env.PORT || 3000;
+const { PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
 axios.get(`${BOT_API}/api/client`,{
 	headers: { Authorization: `Bearer ${SHARED_SECRET}` }
 });
@@ -17,12 +15,9 @@ async function startSite() {
     try{
     const songFavorites = client.songFavorites;
 
-    const SITE_URL = "http://localhost:3000"
-    const CLIENT_ID = "1379083377868673064";
-    const CLIENT_SECRET = "xiwUz3GPSkhP6R7oeH9s_O_52AohU4kV";
+    const SITE_URL = "http://localhost:3000";
     const CALLBACK_SITE_URL = "http://localhost:3000/callback";
     const CALLBACK_LOGIN_URL = "http://localhost:3000/callback-verify"
-    const SESSION_SECRET = "4135231b7f33c6567493mb2a78420fa76";
     const app = express();
     const errorHandler = require('./functions/errorHandler');
     app.set("view engine", "ejs");
@@ -734,7 +729,7 @@ async function startSite() {
     });
 
     app.use(errorHandler)
-    app.listen(port, () => console.log("site running"));
+    app.listen(PORT, () => console.log("site running"));
     }catch(err) {
 	require("./functions/errorListener").send(err)
 	process.exit(0);
