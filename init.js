@@ -264,7 +264,7 @@ async function startSite() {
                 axios.get(`${BOT_API}/api/song-favorites/${req.user.id}`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } }),
                 axios.get(`${BOT_API}/api/stats`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } })
             ]);
-            favorites = favRes.data;
+            favorites = Array.isArray(favRes.data) ? favRes.data : [];
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
         } catch (e) {
