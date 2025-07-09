@@ -8,13 +8,12 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const axios = require("axios");
 const multer = require("multer");
-const { PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
+const { SITE_URL, PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
 
 async function startSite() {
     require("./functions/errorListener")();
-    const SITE_URL = "http://localhost:3000";
-    const CALLBACK_SITE_URL = "http://localhost:3000/callback";
-    const CALLBACK_LOGIN_URL = "http://localhost:3000/callback-verify";
+    const CALLBACK_SITE_URL = `${SITE_URL}/callback`;
+    const CALLBACK_LOGIN_URL = `${SITE_URL}/callback-verify`;
     const app = express();
     const errorHandler = require('./functions/errorHandler');
     app.set("view engine", "ejs");
