@@ -320,6 +320,68 @@ async function startSite() {
             totalUsers
         });
     });
+    // ...existing code...
+
+    const multer = require("multer");
+    const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB max
+
+
+    // Verification page
+    app.get("/verification", ensureAuth, async (req, res) => {
+        let totalGuilds = 0, totalUsers = 0;
+        try {
+            const [userRes, statsRes] = await Promise.all([
+                axios.get(`${BOT_API}/api/user-global/${req.user.id}`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } }),
+                axios.get(`${BOT_API}/api/stats`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } })
+            ]);
+
+            totalGuilds = statsRes.data.totalGuilds;
+            totalUsers = statsRes.data.totalUsers;
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
+        res.render("verification", {
+            user: req.user,
+            userGlobalSettings: userRes,
+            totalGuilds,
+            totalUsers,
+            sidebar: getSidebar(req.user, req.user.guilds, "verification")
+        });
+    });
+
+    // Verification form POST
+    app.post("/verification", ensureAuth, upload.single("photo"), async (req, res) => {
+        const { dob, "cf-turnstile-response": token } = req.body;
+        if (!dob || !token || !req.file) {
+            return res.json({ success: false, error: "All fields are required." });
+        }
+
+        // Cloudflare Turnstile verification
+        const secretKey = "0x4AAAAAABhVtdzv2BC2wE1ZCzwriq0nEdI"; // Replace with your Turnstile secret key
+        const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `secret=${secretKey}&response=${token}&remoteip=${req.ip}`
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyData.success) {
+            return res.json({ success: false, error: "Failed robot verification." });
+        }
+
+        // Save verification status (replace with DB in production)
+        try {
+            await axios.post(`${BOT_API}/api/user-global/${req.user.id}`, req.body, {
+                headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+            });
+        } catch (e) {
+            require("./functions/errorListener").send(e)
+        }
+
+        // You can emit an event, log, or handle as needed here
+        // For demo, just redirect
+        res.redirect("/verification?success=1");
+    });
+    // ...existing code...
 
     // Update per-server user settings
     app.post("/dashboard/user/settings/server/", ensureAuth, async (req, res) => {
