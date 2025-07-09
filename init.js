@@ -640,6 +640,6 @@ async function startSite() {
     // Error handler
     app.use(errorHandler);
 
-    app.listen(PORT, () => console.log("site running"));
+    app.listen(PORT, () => console.log("site running at "+ SITE_URL));
 }
 startSite();
