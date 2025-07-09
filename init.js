@@ -84,6 +84,7 @@ async function startSite() {
     app.get("/callback", passport.authenticate("discord-login", { failureRedirect: "/" }), (req, res) => res.redirect("/dashboard"));
     app.get("/logout", (req, res) => { req.logout(() => res.redirect("/")); });
 
+
     // Dashboard: show all mutual servers, admin link if owner
     app.get("/dashboard", ensureAuth, async (req, res) => {
         let totalGuilds = 0, totalUsers = 0, isOwner = false, mutualGuilds = [];
@@ -501,6 +502,140 @@ async function startSite() {
         }
         res.redirect("/dashboard/user/favorites");
     });
+    app.get("/callback-verify", (req, res, next) => {
+        passport.authenticate("discord-verify", async (err, user, info) => {
+            if (err || !user) {
+                return res.redirect("/?error=" + encodeURIComponent(err?.message || "No user returned"));
+            }
+
+            req.logIn(user, async (loginErr) => {
+                if (loginErr) {
+                    return res.redirect("/?error=" + encodeURIComponent(loginErr.message));
+                }
+
+                const guildID = req.cookies.guildID;
+                if (!guildID) {
+                    return res.redirect("/?error=" + encodeURIComponent("Missing guildID in session"));
+                }
+
+                const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+                const userID = req.user.id;
+
+                try {
+                    // 1. Check if this IP was already used by a different user in this guild
+                    const altRes = await axios.get(`${BOT_API}/api/altDetection/${guildID}/${ip}`, {
+                        headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+                    });
+
+                    const isAlt = altRes.data.alt && altRes.data.userId !== userID;
+
+                    // 2. Check if account is too new
+                    const creationDate = new Date(userID / 4194304 + 1420070400000);
+                    const ageInDays = Math.floor((Date.now() - creationDate) / (1000 * 60 * 60 * 24));
+                    const isTooNew = ageInDays < 10;
+
+                    if (isAlt) {
+                        return res.redirect("/alt-warning?reason=ip-linked&user=" + altRes.data.userId);
+                    }
+
+                    if (isTooNew) {
+                        return res.redirect("/alt-warning?reason=new-account&days=" + ageInDays);
+                    }
+
+                    // 3. Register IP if not alt
+                    await axios.post(`${BOT_API}/api/altDetection/${guildID}/${ip}/${userID}`, {}, {
+                        headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+                    });
+
+                    // Proceed to verification
+                    res.redirect(`/verify/${guildID}`);
+                } catch (e) {
+                    console.error("Alt detection failed:", e.message);
+                    return res.redirect("/?error=" + encodeURIComponent("Alt detection failed."));
+                }
+            });
+        })(req, res, next);
+    });
+
+    app.get("/verify/:guildID", ensureAuth, async (req, res) => {
+        const guildID = req.params.guildID;
+        const userID = req.user.id;
+        const password = generateRandomPassword();
+
+        try {
+            // 1. Fetch or create user global settings
+            let userGSettings = {};
+            try {
+                const gRes = await axios.get(`${BOT_API}/api/user-global/${userID}`, {
+                    headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+                });
+                userGSettings = gRes.data || {};
+            } catch {
+                userGSettings = {};
+            }
+
+            // 2. Store password if not set
+            if (!userGSettings.password) {
+                userGSettings.password = password;
+                await axios.post(`${BOT_API}/api/user-global/${userID}`, userGSettings, {
+                    headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+                });
+            }
+
+            // 3. Calculate account age
+            const creationDate = new Date(userID / 4194304 + 1420070400000);
+            const ageInDays = Math.floor((Date.now() - creationDate) / (1000 * 60 * 60 * 24));
+            const showPassword = ageInDays >= 10;
+
+            // 4. Get guild info and role name
+            const guildRes = await axios.get(`${BOT_API}/api/guilds/${guildID}`, {
+                headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+            });
+            const settingsRes = await axios.get(`${BOT_API}/api/guild-settings/${guildID}`, {
+                headers: { Authorization: `Bearer ${SHARED_SECRET}` }
+            });
+
+            const guildName = guildRes.data.name || "your server";
+            const roleId = settingsRes.data.verifiedRole;
+            const role = guildRes.data.roles.find(r => r.id === roleId);
+            const roleName = role?.name || "Verified";
+
+            res.clearCookie("guildID");
+
+            res.send(`
+                <h2>Verification for ${guildName}</h2>
+                <p>Your account is ${ageInDays} days old.</p>
+                ${showPassword 
+                    ? `<p>🔐 Your password: <code>${userGSettings.password}</code>. Use it with <code>!verify ${userGSettings.password}</code> in DMs to get the role "<strong>${roleName}</strong>".</p>
+                    <p>If the bot doesn't respond, use <code>!verify dm</code> in the server to unlock DMs.</p>`
+                    : `<p>❌ Your account is too new to verify. Try again in ${10 - ageInDays} days.</p>`}
+            `);
+
+            req.logout(() => {});
+        } catch (e) {
+            console.error("Verify route error:", e.message);
+            res.redirect(`/?error=${encodeURIComponent("Verification error: " + e.message)}`);
+        }
+    });
+
+    app.get("/alt-warning", (req, res) => {
+        const reason = req.query.reason;
+        const days = req.query.days;
+        const user = req.query.user;
+
+        let message = "Access denied due to suspicious activity.";
+
+        if (reason === "ip-linked") {
+            message = `❌ This IP address is already linked to user ID: ${user}.`;
+        } else if (reason === "new-account") {
+            message = `⏳ Your account is only ${days} days old. You must wait until it is at least 10 days old to verify.`;
+        }
+
+        res.send(`<h2>Alt Detection Blocked</h2><p>${message}</p>`);
+    });
+
+
+
 
     // Error handler
     app.use(errorHandler);
