@@ -54,6 +54,7 @@ async function startSite() {
 
     function ensureAuth(req, res, next) {
         if (req.isAuthenticated()) return next();
+        req.session.returnTo = req.originalUrl;
         res.redirect("/login");
     }
     function getSidebar(user, guilds, active, selectedGuild) {
@@ -81,7 +82,11 @@ async function startSite() {
     app.get("/about", (req, res) => { res.render("about", { user: req.user }); });
 
     app.get("/login", passport.authenticate("discord-login"));
-    app.get("/callback", passport.authenticate("discord-login", { failureRedirect: "/" }), (req, res) => res.redirect("/dashboard"));
+    app.get("/callback", passport.authenticate("discord-login", { failureRedirect: "/" }), (req, res) => {
+        const redirectTo = req.session.returnTo || "/dashboard";
+        delete req.session.returnTo;
+        res.redirect(redirectTo);
+    });
     app.get("/logout", (req, res) => { req.logout(() => res.redirect("/")); });
 
 
