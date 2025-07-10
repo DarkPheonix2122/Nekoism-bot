@@ -91,20 +91,18 @@ async function startSite() {
         const debugState = req.query.debug;
         if(debugState === null) return res.send("no params...");
         debug = debugState;
+        res.redirect("/")
     })
     app.get("/callback", (req, res, next) => {
-        passport.authenticate("discord-login", { failureRedirect: "/" }, (err, user, info) => {
-            if(debug){
-                require("./functions/errorListener").send("[DEBUG] callback-verify err:\n"+ err);
-                require("./functions/errorListener").send("[DEBUG] callback-verify info:\n"+ info);
-                if (err) return res.send("Token error: " + err.message);
-                if (!user) return res.send("No user: " + JSON.stringify(info));
-
-            }
-            const redirectTo = req.session.returnTo || "/dashboard";
-            delete req.session.returnTo;
-            return res.redirect(redirectTo);
-        })(req, res, next);
+        try{
+            passport.authenticate("discord-login", { failureRedirect: "/" }, (req, res) => {
+                const redirectTo = req.session.returnTo || "/dashboard";
+                delete req.session.returnTo;
+                return res.redirect(redirectTo);
+            })(req, res, next);
+    }catch(err){
+        require("./functions/errorListener").send(err?.message)
+    }
     });
     app.get("/logout", (req, res) => { req.logout(() => res.redirect("/")); });
 
