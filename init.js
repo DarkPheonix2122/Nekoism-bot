@@ -12,8 +12,8 @@ const { SITE_URL, PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSIO
 
 async function startSite() {
     require("./functions/errorListener")();
-    const CALLBACK_SITE_URL = `${SITE_URL}/callback`;
-    const CALLBACK_LOGIN_URL = `${SITE_URL}/callback-verify`;
+    const CALLBACK_SITE_URL = `${SITE_URL}callback`;
+    const CALLBACK_LOGIN_URL = `${SITE_URL}callback-verify`;
     const app = express();
     const errorHandler = require('./functions/errorHandler');
     app.set("view engine", "ejs");
