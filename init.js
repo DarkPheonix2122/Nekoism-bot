@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const axios = require("axios");
 const multer = require("multer");
+let debug = false
 const { SITE_URL, PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
 
 async function startSite() {
@@ -47,7 +48,6 @@ async function startSite() {
         clientSecret: CLIENT_SECRET,
         callbackURL: CALLBACK_LOGIN_URL,
         scope: ["identify"],
-        state: true
     }, (accessToken, refreshToken, profile, done) => {
         process.nextTick(() => done(null, profile));
     }));
@@ -68,6 +68,10 @@ async function startSite() {
 
     // Home
     app.get("/", async (req, res) => {
+        let error = req.query.error
+        if(error){
+            return require("./functions/errorHandler")(error, req, res)
+        }
         let totalGuilds = 0, totalUsers = 0;
         try {
             const statsRes = await axios.get(`${BOT_API}/api/stats`, {
@@ -82,10 +86,25 @@ async function startSite() {
     app.get("/about", (req, res) => { res.render("about", { user: req.user }); });
 
     app.get("/login", passport.authenticate("discord-login"));
-    app.get("/callback", passport.authenticate("discord-login", { failureRedirect: "/" }), (req, res) => {
-        const redirectTo = req.session.returnTo || "/dashboard";
-        delete req.session.returnTo;
-        res.redirect(redirectTo);
+    app.get("/login-verify", passport.authenticate("discord-verify"));
+    app.get("/debug", (req, res, next) => {
+        const debugState = req.query.debug;
+        if(debugState === null) return res.send("no params...");
+        debug = debugState;
+    })
+    app.get("/callback", (req, res, next) => {
+        passport.authenticate("discord-login", { failureRedirect: "/" }, (err, user, info) => {
+            if(debug){
+                require("./functions/errorListener").send("[DEBUG] callback-verify err:\n"+ err);
+                require("./functions/errorListener").send("[DEBUG] callback-verify info:\n"+ info);
+                if (err) return res.send("Token error: " + err.message);
+                if (!user) return res.send("No user: " + JSON.stringify(info));
+
+            }
+            const redirectTo = req.session.returnTo || "/dashboard";
+            delete req.session.returnTo;
+            return res.redirect(redirectTo);
+        })(req, res, next);
     });
     app.get("/logout", (req, res) => { req.logout(() => res.redirect("/")); });
 
@@ -513,10 +532,6 @@ async function startSite() {
                 return res.redirect("/?error=" + encodeURIComponent(err?.message || "No user returned"));
             }
 
-            req.logIn(user, async (loginErr) => {
-                if (loginErr) {
-                    return res.redirect("/?error=" + encodeURIComponent(loginErr.message));
-                }
 
                 const guildID = req.cookies.guildID;
                 if (!guildID) {
@@ -558,7 +573,6 @@ async function startSite() {
                     console.error("Alt detection failed:", e.message);
                     return res.redirect("/?error=" + encodeURIComponent("Alt detection failed."));
                 }
-            });
         })(req, res, next);
     });
 
