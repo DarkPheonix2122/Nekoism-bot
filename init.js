@@ -10,7 +10,6 @@ const axios = require("axios");
 const multer = require("multer");
 let debug = false
 const { SITE_URL, PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
-console.log(CLIENT_ID, CLIENT_SECRET, SESSION_SECRET);
 async function startSite() {
     require("./functions/errorListener")();
     const CALLBACK_SITE_URL = `${SITE_URL}callback`;
@@ -28,6 +27,19 @@ async function startSite() {
         saveUninitialized: false,
         cookie: { secure: false }
     }));
+    app.use((req, res, next) => {
+    const ignorePaths = ["/login", "/callback", "/login-verify", "/callback-verify"];
+
+    if (
+        req.method === "GET" &&
+        !ignorePaths.includes(req.path) &&
+        (req.path === "/" || req.path.startsWith("/dashboard"))
+    ) {
+        req.session.returnTo = req.originalUrl;
+    }
+
+    next();
+    });
 
     app.use(passport.initialize());
     app.use(passport.session());
@@ -85,7 +97,9 @@ async function startSite() {
 
     app.get("/about", (req, res) => { res.render("about", { user: req.user }); });
 
-    app.get("/login", passport.authenticate("discord-login"));
+    app.get("/login", ensureAuth, (req, res, next) => {
+        passport.authenticate("discord-login");
+    });
     app.get("/login-verify", passport.authenticate("discord-verify"));
     app.get("/debug", (req, res, next) => {
         const debugState = req.query.debug;
@@ -96,7 +110,7 @@ async function startSite() {
     app.get("/callback", (req, res, next) => {
         try{
             passport.authenticate("discord-login", { failureRedirect: "/" }, (req, res) => {
-                const redirectTo = req.session.returnTo || "/dashboard";
+                const redirectTo = req.session?.returnTo|| "/dashboard";
                 delete req.session.returnTo;
                 return res.redirect(redirectTo);
             })(req, res, next);
