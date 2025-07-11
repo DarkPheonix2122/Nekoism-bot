@@ -212,33 +212,69 @@ async function startSite() {
         const isAdmin = userGuild && (userGuild.permissions & 0x8) === 0x8;
         if (!isAdmin) return res.status(403).send("Forbidden");
 
-        // Prepare modules object
-        let { modules } = req.body;
-        const modulesArr = Array.isArray(modules) ? modules : (modules ? [modules] : []);
-        let modulesObj = {};
+        let {
+            welcomeChannel, welcomeMessage,
+            leaveChannel, leaveMessage,
+            defaultRole, giveawayChannel,
+            defaultMusicChannel, prefix,
+            modules, verificationPassword,
+            verifiedRole, verificationChannel,
+            disableTab
+        } = req.body;
+
+        if (!Array.isArray(modules)) modules = modules ? [modules] : [];
+
+        // Fetch current module keys from API
+        let currentModules = [];
         try {
-            const configRes = await axios.get(`${BOT_API}/api/guild-settings/${guildID}`, {
+            const resModules = await axios.get(`${BOT_API}/api/guild-settings/${guildID}`, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
-            const currentModules = Object.keys(configRes.data.modules || {});
-            for (const key of currentModules) {
-                modulesObj[key] = modulesArr.includes(key);
-            }
+            currentModules = Object.keys(resModules.data.modules || {});
         } catch (e) {
-            require("./functions/errorListener").send(e)
+            require("./functions/errorListener").send(e);
         }
 
-        // Send update to API
+        const modulesObj = {};
+        for (const key of currentModules) {
+            modulesObj[key] = modules.includes(key);
+        }
+
+        if (disableTab === "intro") {
+            welcomeChannel = null;
+            welcomeMessage = null;
+            leaveChannel = null;
+            leaveMessage = null;
+        }
+
+        if (disableTab === "verification") {
+            verificationPassword = null;
+            verifiedRole = null;
+            verificationChannel = null;
+        }
+
         try {
             await axios.post(`${BOT_API}/api/guild-settings/${guildID}`, {
-                ...req.body,
+                welcomeChannel,
+                welcomeMessage,
+                leaveChannel,
+                leaveMessage,
+                defaultRole,
+                giveawayChannel,
+                defaultMusicChannel,
+                prefix,
+                verifiedRole,
+                verificationChannel,
+                verificationPassword,
                 modules: modulesObj
             }, {
                 headers: { Authorization: `Bearer ${SHARED_SECRET}` }
             });
         } catch (e) {
-            require("./functions/errorListener").send(e)
+            require("./functions/errorListener").send(e);
+            return res.redirect(`/?error=${encodeURIComponent(e.message)}`);
         }
+
         res.redirect(`/dashboard/settings/${guildID}`);
     });
 
