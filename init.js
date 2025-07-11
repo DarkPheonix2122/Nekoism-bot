@@ -35,7 +35,7 @@ async function startSite() {
         !ignorePaths.includes(req.path) &&
         (req.path === "/" || req.path.startsWith("/dashboard"))
     ) {
-        req.session.returnTo = req.originalUrl;
+        res.cookie("returnTo", req.originalUrl, { maxAge: 5 * 60 * 1000 });
     }
 
     next();
@@ -107,8 +107,7 @@ async function startSite() {
     app.get("/callback", (req, res, next) => {
         try{
             passport.authenticate("discord-login", { failureRedirect: "/" }, (req, res) => {
-                const redirectTo = req.session?.returnTo|| "/dashboard";
-                delete req.session.returnTo;
+                const redirectTo = req.cookies?.returnTo|| "/dashboard";
                 return res.redirect(redirectTo);
             })(req, res, next);
     }catch(err){
