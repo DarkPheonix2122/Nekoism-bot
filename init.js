@@ -10,7 +10,7 @@ const axios = require("axios");
 const multer = require("multer");
 let debug = false
 const { SITE_URL, PORT, BOT_API, SHARED_SECRET, CLIENT_ID, CLIENT_SECRET, SESSION_SECRET } = process.env;
-
+console.log(CLIENT_ID, CLIENT_SECRET, SESSION_SECRET);
 async function startSite() {
     require("./functions/errorListener")();
     const CALLBACK_SITE_URL = `${SITE_URL}callback`;
