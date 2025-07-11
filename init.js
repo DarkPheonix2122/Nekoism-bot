@@ -33,7 +33,7 @@ async function startSite() {
     if (
         req.method === "GET" &&
         !ignorePaths.includes(req.path) &&
-        (req.path === "/" || req.path.startsWith("/dashboard"))
+        (req.path.startsWith("/dashboard"))
     ) {
         res.cookie("returnTo", req.originalUrl, { maxAge: 5 * 60 * 1000 });
     }
