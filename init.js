@@ -28,7 +28,7 @@ async function startSite() {
         cookie: { secure: false }
     }));
     app.use((req, res, next) => {
-    const ignorePaths = ["/login", "/callback", "/login-verify", "/callback-verify"];
+    const ignorePaths = ["/login", "/callback", "/login-verify", "/callback-verify", "/"];
 
     if (
         req.method === "GET" &&
@@ -104,14 +104,9 @@ async function startSite() {
         debug = debugState;
         res.redirect("/")
     })
-    app.get("/callback", async(req, res, next) => {
-        try{
-            await passport.authenticate("discord-login", { failureRedirect: "/" })(req, res, next)
-            const redirectTo = req.cookies?.returnTo|| "/dashboard";
-            return res.redirect(redirectTo);
-    }catch(err){
-        require("./functions/errorListener").send(err?.message)
-    }
+    app.get("/callback", passport.authenticate("discord-login", { failureRedirect: "/" }), (req, res) => {
+        const redirectTo = req.cookies?.returnTo|| "/dashboard";
+        res.redirect(redirectTo);
     });
     app.get("/logout", (req, res) => { req.logout(() => res.redirect("/")); });
 
