@@ -104,12 +104,11 @@ async function startSite() {
         debug = debugState;
         res.redirect("/")
     })
-    app.get("/callback", (req, res, next) => {
+    app.get("/callback", async(req, res, next) => {
         try{
-            passport.authenticate("discord-login", { failureRedirect: "/" })(req, res, next).then(() => {
-                const redirectTo = req.cookies?.returnTo|| "/dashboard";
-                return res.redirect(redirectTo);    
-            });
+            await passport.authenticate("discord-login", { failureRedirect: "/" })(req, res, next)
+            const redirectTo = req.cookies?.returnTo|| "/dashboard";
+            return res.redirect(redirectTo);
     }catch(err){
         require("./functions/errorListener").send(err?.message)
     }
