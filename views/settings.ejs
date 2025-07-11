@@ -196,7 +196,7 @@
           <button type="button" class="disable-btn" onclick="disableTab('verification')">Disable Verification</button>
         </div>
       </div>
-      <button type="submit">✅ Save</button>
+      <button type="submit" class="save-btn" onclick="this.disabled = true; this.innerText = 'Saving...'; this.form.submit();">Save</button>
     </form>
 
     <!-- Dynamic placeholders -->
@@ -286,5 +286,6 @@ function disableTab(tab) {
   // Submit the form
   form.submit();
 }
+
 </script>
 <%- include('partials/footer', { totalGuilds: totalGuilds, totalUsers: totalUsers }) %>
