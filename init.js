@@ -106,10 +106,10 @@ async function startSite() {
     })
     app.get("/callback", (req, res, next) => {
         try{
-            passport.authenticate("discord-login", { failureRedirect: "/" }, (req, res) => {
+            passport.authenticate("discord-login", { failureRedirect: "/" })(req, res, next).then(() => {
                 const redirectTo = req.cookies?.returnTo|| "/dashboard";
-                return res.redirect(redirectTo);
-            })(req, res, next);
+                return res.redirect(redirectTo);    
+            });
     }catch(err){
         require("./functions/errorListener").send(err?.message)
     }
