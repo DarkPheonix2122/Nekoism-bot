@@ -66,7 +66,6 @@ async function startSite() {
 
     function ensureAuth(req, res, next) {
         if (req.isAuthenticated()) return next();
-        req.session.returnTo = req.originalUrl;
         res.redirect("/login");
     }
     function getSidebar(user, guilds, active, selectedGuild) {
@@ -97,9 +96,7 @@ async function startSite() {
 
     app.get("/about", (req, res) => { res.render("about", { user: req.user }); });
 
-    app.get("/login", ensureAuth, (req, res, next) => {
-        passport.authenticate("discord-login");
-    });
+    app.get("/login", passport.authenticate("discord-login"));
     app.get("/login-verify", passport.authenticate("discord-verify"));
     app.get("/debug", (req, res, next) => {
         const debugState = req.query.debug;
