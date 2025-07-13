@@ -390,13 +390,13 @@ async function startSite() {
 
     // Verification page
     app.get("/verification", ensureAuth, async (req, res) => {
-        let totalGuilds = 0, totalUsers = 0;
+        let totalGuilds = 0, totalUsers = 0, usersRes = null;
         try {
             const [userRes, statsRes] = await Promise.all([
                 axios.get(`${BOT_API}/api/user-global/${req.user.id}`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } }),
                 axios.get(`${BOT_API}/api/stats`, { headers: { Authorization: `Bearer ${SHARED_SECRET}` } })
             ]);
-
+            usersRes = userRes
             totalGuilds = statsRes.data.totalGuilds;
             totalUsers = statsRes.data.totalUsers;
         } catch (e) {
@@ -404,7 +404,7 @@ async function startSite() {
         }
         res.render("verification", {
             user: req.user,
-            userGlobalSettings: userRes,
+            userGlobalSettings: usersRes,
             totalGuilds,
             totalUsers,
             sidebar: getSidebar(req.user, req.user.guilds, "verification")
