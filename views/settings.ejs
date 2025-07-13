@@ -196,7 +196,7 @@
           <button type="button" class="disable-btn" onclick="disableTab('verification')">Disable Verification</button>
         </div>
       </div>
-      <button type="submit" class="save-btn" onclick="this.disabled = true; this.innerText = 'Saving...'; this.form.submit();">Save</button>
+      <button type="submit" id="save-btn">✅ Save</button>
     </form>
 
     <!-- Dynamic placeholders -->
@@ -214,6 +214,19 @@
   <% } %>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector('.settings-box form');
+  const saveBtn = document.getElementById("save-btn");
+
+  if (form && saveBtn) {
+    form.addEventListener("submit", function () {
+      saveBtn.disabled = true;
+      saveBtn.innerText = "Saving...";
+    });
+  }
+});
+</script>
 <script>
 function showTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
