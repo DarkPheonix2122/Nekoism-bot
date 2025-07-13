@@ -213,20 +213,6 @@
     <h3>Server Settings (read-only):</h3>
   <% } %>
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector('.settings-box form');
-  const saveBtn = document.getElementById("save-btn");
-
-  if (form && saveBtn) {
-    form.addEventListener("submit", function () {
-      saveBtn.disabled = true;
-      saveBtn.innerText = "Saving...";
-    });
-  }
-});
-</script>
 <script>
 function showTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -271,6 +257,15 @@ document.addEventListener("DOMContentLoaded", function() {
         <button type=\"submit\">Test Leave Message</button>
       </form>`;
     tabIntro.appendChild(testPlaceholder);
+  };
+  const form2 = document.querySelector('.settings-box form');
+  const saveBtn = document.getElementById("save-btn");
+
+  if (form2 && saveBtn) {
+    form2.addEventListener("submit", function () {
+      saveBtn.disabled = true;
+      saveBtn.innerText = "Saving...";
+    });
   }
 });
 </script>
